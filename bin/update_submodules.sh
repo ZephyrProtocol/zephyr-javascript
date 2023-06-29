@@ -9,7 +9,7 @@ git checkout master
 git pull --ff-only origin master
 
 # update monero-project
-cd ./external/monero-project
+cd ./external/zephyr
 git checkout master
 git pull --ff-only origin master
 cd ../../../../

@@ -1,4 +1,4 @@
-const BigInteger = require("../../common/biginteger").BigInteger;
+const ZephyrBalance = require("./ZephyrBalance");
 const GenUtils = require("../../common/GenUtils");
 const assert = require("assert");
 
@@ -6,7 +6,6 @@ const assert = require("assert");
  * Monero subaddress model.
  */
 class MoneroSubaddress {
-  
   constructor(stateOrAddress, accountIndex, index) {
     if (stateOrAddress === undefined || typeof stateOrAddress === "string") {
       this.state = {};
@@ -15,19 +14,24 @@ class MoneroSubaddress {
       this.setIndex(index);
     } else {
       this.state = stateOrAddress;
-      assert(accountIndex === undefined && index === undefined, "Can construct MoneroSubaddress with object or params but not both");
-      if (this.state.balance !== undefined && !(this.state.balance instanceof BigInteger)) this.state.balance = BigInteger.parse(this.state.balance);
-      if (this.state.unlockedBalance !== undefined && !(this.state.unlockedBalance instanceof BigInteger)) this.state.unlockedBalance = BigInteger.parse(this.state.unlockedBalance);
+      assert(
+        accountIndex === undefined && index === undefined,
+        "Can construct MoneroSubaddress with object or params but not both",
+      );
+      if (this.state.balance !== undefined && !(this.state.balance instanceof ZephyrBalance))
+        this.state.balance = new ZephyrBalance(this.state.balance);
+      if (this.state.unlockedBalance !== undefined && !(this.state.unlockedBalance instanceof ZephyrBalance))
+        this.state.unlockedBalance = new ZephyrBalance(this.state.unlockedBalance);
     }
   }
-  
+
   toJson() {
     let json = Object.assign({}, this.state);
-    if (json.balance) json.balance = json.balance.toString();
-    if (json.unlockedBalance) json.unlockedBalance = json.unlockedBalance.toString();
+    if (json.balance) json.balance = json.balance.toJson();
+    if (json.unlockedBalance) json.unlockedBalance = json.unlockedBalance.toJson();
     return json;
   }
-  
+
   getAccountIndex() {
     return this.state.accountIndex;
   }
@@ -45,7 +49,7 @@ class MoneroSubaddress {
     this.state.index = index;
     return this;
   }
-  
+
   getAddress() {
     return this.state.address;
   }
@@ -108,7 +112,7 @@ class MoneroSubaddress {
     this.state.numBlocksToUnlock = numBlocksToUnlock;
     return this;
   }
-  
+
   toString(indent) {
     let str = "";
     str += GenUtils.kvLine("Account index", this.getAccountIndex(), indent);
@@ -120,7 +124,7 @@ class MoneroSubaddress {
     str += GenUtils.kvLine("Num unspent outputs", this.getNumUnspentOutputs(), indent);
     str += GenUtils.kvLine("Is used", this.isUsed(), indent);
     str += GenUtils.kvLine("Num blocks to unlock", this.isUsed(), indent);
-    return str.slice(0, str.length - 1);  // strip last newline
+    return str.slice(0, str.length - 1); // strip last newline
   }
 }
 

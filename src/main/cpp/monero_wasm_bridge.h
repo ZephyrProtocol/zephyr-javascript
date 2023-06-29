@@ -77,12 +77,14 @@ namespace monero_wasm_bridge
   void scan_txs(int handle, const string& args, emscripten::val callback);
   void rescan_spent(int handle, emscripten::val callback);
   void rescan_blockchain(int handle, emscripten::val callback);
+  void get_circulating_supply(int handle, emscripten::val callback);
+  void get_reserve_info(int handle, emscripten::val callback);
   string get_balance_wallet(int handle);
-  string get_balance_account(int handle, const uint32_t account_idx);
-  string get_balance_subaddress(int handle, const uint32_t account_idx, const uint32_t subaddress_idx);
+  string get_balance_account(int handle, const std::string& asset_type, const uint32_t account_idx);
+  string get_balance_subaddress(int handle, const std::string& asset_type,  const uint32_t account_idx, const uint32_t subaddress_idx);
   string get_unlocked_balance_wallet(int handle);
-  string get_unlocked_balance_account(int handle, const uint32_t account_idx);
-  string get_unlocked_balance_subaddress(int handle, const uint32_t account_idx, const uint32_t subaddress_idx);
+  string get_unlocked_balance_account(int handle, const std::string& asset_type, const uint32_t account_idx);
+  string get_unlocked_balance_subaddress(int handle, const std::string& asset_type, const uint32_t account_idx, const uint32_t subaddress_idx);
   string get_accounts(int handle, bool include_subaddresses = false, const string& tag = "");
   string get_account(int handle, uint32_t account_idx, bool include_subaddresses = false);
   string create_account(int handle, const string& label);

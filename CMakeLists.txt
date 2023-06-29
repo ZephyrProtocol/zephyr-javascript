@@ -33,7 +33,7 @@ include_directories("${MONERO_CPP}/external/libsodium/include/sodium")
 # monero-project
 ##################
 
-set(MONERO_PROJECT "${MONERO_CPP}/external/monero-project")
+set(MONERO_PROJECT "${MONERO_CPP}/external/zephyr")
 set(MONERO_PROJECT_SRC "${MONERO_PROJECT}/src")
 
 # headers
@@ -41,16 +41,17 @@ include_directories("src/main/cpp")
 include_directories("${MONERO_PROJECT_SRC}/")
 include_directories("${MONERO_PROJECT_SRC}/checkpoints")
 include_directories("${MONERO_PROJECT_SRC}/common")
-#include_directories("${MONERO_PROJECT_SRC}/crypto")
-#include_directories("${MONERO_PROJECT_SRC}/crypto/crypto_ops_builder/include/")    # DISABLED?
-#include_directories("${MONERO_PROJECT_SRC}/crypto/crypto_ops_builder/include/sodium")    # DISABLED?
+include_directories("${MONERO_PROJECT_SRC}/oracle")
+# include_directories("${MONERO_PROJECT_SRC}/crypto")
+# include_directories("${MONERO_PROJECT_SRC}/crypto/crypto_ops_builder/include/")    # DISABLED?
+# include_directories("${MONERO_PROJECT_SRC}/crypto/crypto_ops_builder/include/sodium")    # DISABLED?
 include_directories("${MONERO_PROJECT_SRC}/cryptonote_basic")
-#include_directories("${MONERO_PROJECT_SRC}/multisig")
-#include_directories("${MONERO_PROJECT_SRC}/cryptonote_core")
-#include_directories("${MONERO_PROJECT_SRC}/cryptonote_protocol")
-#include_directories("${MONERO_PROJECT_SRC}/wallet")
-#include_directories("${MONERO_PROJECT_SRC}/rpc")
-#include_directories("${MONERO_PROJECT_SRC}/mnemonics")
+# include_directories("${MONERO_PROJECT_SRC}/multisig")
+# include_directories("${MONERO_PROJECT_SRC}/cryptonote_core")
+# include_directories("${MONERO_PROJECT_SRC}/cryptonote_protocol")
+# include_directories("${MONERO_PROJECT_SRC}/wallet")
+# include_directories("${MONERO_PROJECT_SRC}/rpc")
+# include_directories("${MONERO_PROJECT_SRC}/mnemonics")
 include_directories("${MONERO_PROJECT}/external/")
 include_directories("${MONERO_PROJECT}/external/easylogging++")
 include_directories("${MONERO_PROJECT}/external/rapidjson/include")
@@ -62,8 +63,17 @@ include_directories("${MONERO_PROJECT}/contrib/epee/include/net")
 #include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 #include_directories("${MONERO_PROJECT_SRC}/wallet/api")
 
-include_directories("${MONERO_PROJECT}/build/release/translations")
-include_directories("${MONERO_PROJECT}/build/release/generated_include")
+# if (CMAKE_HOST_APPLE)
+#     include_directories("${MONERO_PROJECT}/build/Darwin/develop/release/translations")
+# else()
+#     include_directories("${MONERO_PROJECT}/build/release/translations")
+# endif()
+
+# include_directories("${MONERO_PROJECT}/build/release/translations")
+# include_directories("${MONERO_PROJECT}/build/release/generated_include")
+
+include_directories("${MONERO_PROJECT}/build/Darwin/master/release/translations")
+include_directories("${MONERO_PROJECT}/build/Darwin/master/release/generated_include")
 
 #############
 # Unbound
@@ -165,8 +175,10 @@ set(
     # monero-project (modified for WASM)
     ${MONERO_PROJECT_SRC}/cryptonote_basic/cryptonote_basic_impl.cpp
     ${MONERO_PROJECT_SRC}/cryptonote_basic/account.cpp
+    # ${MONERO_PROJECT_SRC}/cryptonote_basic/cryptonote_format_utils_basic.cpp
     ${MONERO_PROJECT_SRC}/cryptonote_basic/cryptonote_format_utils.cpp
-    ${MONERO_PROJECT_SRC}/cryptonote_basic/cryptonote_format_utils_basic.cpp
+    ${MONERO_PROJECT_SRC}/oracle/pricing_record.cpp
+
     ${MONERO_PROJECT_SRC}/crypto/crypto.cpp
     ${MONERO_PROJECT_SRC}/crypto/hash.c
     ${MONERO_PROJECT_SRC}/crypto/slow-hash.c
@@ -234,14 +246,20 @@ set(
     # monero-project (modified for WASM)
     ${MONERO_PROJECT}/external/db_drivers/liblmdb/mdb.c
     ${MONERO_PROJECT}/external/db_drivers/liblmdb/midl.c
+
+    ${MONERO_PROJECT}/external/randomx/src/randomx.cpp
+    ${MONERO_PROJECT}/external/randomx/src/randomx.h
+
     ${MONERO_PROJECT}/contrib/epee/src/abstract_http_client.cpp
+    ${MONERO_PROJECT}/contrib/epee/src/file_io_utils.cpp
     #${MONERO_PROJECT}/contrib/epee/src/http_auth.cpp
     ${MONERO_PROJECT_SRC}/wallet/wallet2.cpp
     ${MONERO_PROJECT_SRC}/wallet/message_store.cpp
     ${MONERO_PROJECT_SRC}/wallet/message_transporter.cpp
     ${MONERO_PROJECT_SRC}/wallet/node_rpc_proxy.cpp
-    ${MONERO_PROJECT_SRC}/wallet/wallet_rpc_payments.cpp
+
     #${MONERO_PROJECT_SRC}/blockchain_db/lmdb/db_lmdb.cpp
+    ${MONERO_PROJECT_SRC}/crypto/hash-ops.h
     ${MONERO_PROJECT_SRC}/cryptonote_core/cryptonote_tx_utils.cpp
     ${MONERO_PROJECT_SRC}/checkpoints/checkpoints.cpp
     ${MONERO_PROJECT_SRC}/common/perf_timer.cpp
@@ -342,14 +360,14 @@ if (BUILD_MONERO_WALLET_FULL_WASM)
     target_link_libraries(
         monero_wallet_full
         #
-        #openssl_ssl
-        #openssl_crypto
+        # openssl_ssl
+        # openssl_crypto
         #
         boost_chrono
         boost_system
         boost_thread
         boost_serialization
-        #boost_filesystem
+        boost_filesystem
         boost_regex
         #boost_atomic
         #

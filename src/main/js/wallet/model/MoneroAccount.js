@@ -6,17 +6,17 @@ const MoneroSubaddress = require("./MoneroSubaddress");
  * Monero account model.
  */
 class MoneroAccount {
-  
   constructor(stateOrIndex, primaryAddress, balance, unlockedBalance, subaddresses) {
-    
     // construct from json
     if (typeof stateOrIndex === "object") {
       this.state = stateOrIndex;
-      
+
       // deserialize balances
-      if (this.state.balance !== undefined && !(this.state.balance instanceof BigInteger)) this.state.balance = BigInteger.parse(this.state.balance);
-      if (this.state.unlockedBalance !== undefined && !(this.state.unlockedBalance instanceof BigInteger)) this.state.unlockedBalance = BigInteger.parse(this.state.unlockedBalance);
-      
+      if (this.state.balance !== undefined && !(this.state.balance instanceof BigInteger))
+        this.state.balance = BigInteger.parse(this.state.balance);
+      if (this.state.unlockedBalance !== undefined && !(this.state.unlockedBalance instanceof BigInteger))
+        this.state.unlockedBalance = BigInteger.parse(this.state.unlockedBalance);
+
       // deserialize subaddresses
       if (this.state.subaddresses) {
         for (let i = 0; i < this.state.subaddresses.length; i++) {
@@ -26,7 +26,7 @@ class MoneroAccount {
         }
       }
     }
-    
+
     // construct from individual params
     else {
       this.state = {};
@@ -37,7 +37,7 @@ class MoneroAccount {
       this.setSubaddresses(subaddresses);
     }
   }
-  
+
   toJson() {
     let json = Object.assign({}, this.state);
     if (json.balance) json.balance = json.balance.toString();
@@ -49,16 +49,16 @@ class MoneroAccount {
     }
     return json;
   }
-  
+
   getIndex() {
     return this.state.index;
   }
-  
+
   setIndex(index) {
     this.state.index = index;
     return this;
   }
-  
+
   getPrimaryAddress() {
     return this.state.primaryAddress;
   }
@@ -67,40 +67,43 @@ class MoneroAccount {
     this.state.primaryAddress = primaryAddress;
     return this;
   }
-  
+
   getBalance() {
     return this.state.balance;
   }
-  
+
   setBalance(balance) {
     this.state.balance = balance;
     return this;
   }
-  
+
   getUnlockedBalance() {
     return this.state.unlockedBalance;
   }
-  
+
   setUnlockedBalance(unlockedBalance) {
     this.state.unlockedBalance = unlockedBalance;
     return this;
   }
-  
+
   getTag() {
     return this.state.tag;
   }
-  
+
   setTag(tag) {
     this.state.tag = tag;
     return this;
   }
-  
+
   getSubaddresses() {
     return this.state.subaddresses;
   }
-  
+
   setSubaddresses(subaddresses) {
-    assert(subaddresses === undefined || Array.isArray(subaddresses), "Given subaddresses must be undefined or an array of subaddresses");
+    assert(
+      subaddresses === undefined || Array.isArray(subaddresses),
+      "Given subaddresses must be undefined or an array of subaddresses",
+    );
     this.state.subaddresses = subaddresses;
     if (subaddresses) {
       for (let subaddress of subaddresses) {
@@ -109,7 +112,7 @@ class MoneroAccount {
     }
     return this;
   }
-  
+
   toString(indent = 0) {
     let str = "";
     str += GenUtils.kvLine("Index", this.getIndex(), indent);
@@ -118,13 +121,13 @@ class MoneroAccount {
     str += GenUtils.kvLine("Unlocked balance", this.getUnlockedBalance(), indent);
     str += GenUtils.kvLine("Tag", this.getTag(), indent);
     if (this.getSubaddresses() != null) {
-      sb += GenUtils.kvLine("Subaddresses", "", indent)
+      sb += GenUtils.kvLine("Subaddresses", "", indent);
       for (let i = 0; i < this.getSubaddresses().size(); i++) {
         str += GenUtils.kvLine(i + 1, "", indent + 1);
         str += this.getSubaddresses()[i].toString(indent + 2) + "\n";
       }
     }
-    return str.slice(0, str.length - 1);  // strip last newline
+    return str.slice(0, str.length - 1); // strip last newline
   }
 }
 

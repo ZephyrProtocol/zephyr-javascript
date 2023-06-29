@@ -1,8 +1,8 @@
-'use strict'
+"use strict";
 
 /**
  * Export all library models.
- * 
+ *
  * See the full model specification: http://moneroecosystem.org/monero-java/monero-spec.pdf
  */
 module.exports = {};
@@ -76,6 +76,8 @@ module.exports.MoneroTxWallet = require("./src/main/js/wallet/model/MoneroTxWall
 module.exports.MoneroTxQuery = require("./src/main/js/wallet/model/MoneroTxQuery");
 module.exports.MoneroWalletListener = require("./src/main/js/wallet/model/MoneroWalletListener");
 module.exports.MoneroWalletConfig = require("./src/main/js/wallet/model/MoneroWalletConfig");
+module.exports.ZephyrBalance = require("./src/main/js/wallet/model/ZephyrBalance");
+module.exports.ZephyrReserveInfo = require("./src/main/js/wallet/model/ZephyrReserveInfo");
 module.exports.MoneroMessageSignatureType = require("./src/main/js/wallet/model/MoneroMessageSignatureType");
 module.exports.MoneroMessageSignatureResult = require("./src/main/js/wallet/model/MoneroMessageSignatureResult");
 
@@ -96,28 +98,28 @@ module.exports.MoneroWalletFull = require("./src/main/js/wallet/MoneroWalletFull
 
 /**
  * <p>Get the version of the monero-javascript library.<p>
- * 
+ *
  * @return {string} the version of this monero-javascript library
  */
-module.exports.getVersion = function() {
-    return module.exports.MoneroUtils.getVersion();
-}
+module.exports.getVersion = function () {
+  return module.exports.MoneroUtils.getVersion();
+};
 
 /**
  * <p>Create a client connected to monerod.<p>
- * 
+ *
  * <p>Examples:<p>
- * 
+ *
  * <code>
  * let daemon = await monerojs.connectToDaemonRpc("http://localhost:38081", "superuser", "abctesting123");<br><br>
- * 
+ *
  * let daemon = await monerojs.connectToDaemonRpc({<br>
  * &nbsp;&nbsp; uri: "http://localhost:38081",<br>
  * &nbsp;&nbsp; username: "superuser",<br>
  * &nbsp;&nbsp; password: "abctesting123"<br>
  * });
  * </code>
- * 
+ *
  * @param {string|object|MoneroRpcConnection} uriOrConfig - uri of monerod or JS config object or MoneroRpcConnection
  * @param {string} uriOrConfig.uri - uri of monerod
  * @param {string} uriOrConfig.username - username to authenticate with monerod (optional)
@@ -132,23 +134,25 @@ module.exports.getVersion = function() {
  * @param {boolean} proxyToWorker - runs the daemon client in a web worker if true (default true)
  * @return {MoneroDaemonRpc} the daemon RPC client
  */
-module.exports.connectToDaemonRpc = function() { return module.exports.MoneroDaemonRpc._connectToDaemonRpc(...arguments); }
+module.exports.connectToDaemonRpc = function () {
+  return module.exports.MoneroDaemonRpc._connectToDaemonRpc(...arguments);
+};
 
 /**
  * <p>Create a client connected to monero-wallet-rpc.</p>
- * 
+ *
  * <p>Examples:</p>
- * 
+ *
  * <code>
  * let walletRpc = await monerojs.connectToWalletRpc("http://localhost:38081", "superuser", "abctesting123");<br><br>
- * 
+ *
  * let walletRpc = await monerojs.connectToWalletRpc({<br>
  * &nbsp;&nbsp; uri: "http://localhost:38081",<br>
  * &nbsp;&nbsp; username: "superuser",<br>
  * &nbsp;&nbsp; password: "abctesting123",<br>
  * &nbsp;&nbsp; rejectUnauthorized: false // e.g. local development<br>
  * });<br><br>
- * 
+ *
  * // connect to monero-wallet-rpc running as internal process<br>
  * let walletRpc = await monerojs.connectToWalletRpc([<br>
  * &nbsp;&nbsp; "/path/to/monero-wallet-rpc",<br>
@@ -160,9 +164,9 @@ module.exports.connectToDaemonRpc = function() { return module.exports.MoneroDae
  * &nbsp;&nbsp; "--wallet-dir", "/path/to/wallets", // defaults to monero-wallet-rpc directory<br>
  * &nbsp;&nbsp; "--rpc-access-control-origins", "http://localhost:8080"<br>
  * &nbsp; ]);
- * 
+ *
  * </code>
- * 
+ *
  * @param {string|string[]|object|MoneroRpcConnection} uriOrConfig - uri of monero-wallet-rpc or terminal parameters or JS config object or MoneroRpcConnection
  * @param {string} uriOrConfig.uri - uri of monero-wallet-rpc
  * @param {string} uriOrConfig.username - username to authenticate with monero-wallet-rpc (optional)
@@ -173,13 +177,15 @@ module.exports.connectToDaemonRpc = function() { return module.exports.MoneroDae
  * @param {boolean} rejectUnauthorized - rejects self-signed certificates if true (default true)
  * @return {MoneroWalletRpc} the wallet RPC client
  */
-module.exports.connectToWalletRpc = function() { return module.exports.MoneroWalletRpc._connectToWalletRpc(...arguments); }
+module.exports.connectToWalletRpc = function () {
+  return module.exports.MoneroWalletRpc._connectToWalletRpc(...arguments);
+};
 
 /**
  * <p>Create a Monero wallet using fully client-side WebAssembly bindings to monero-project's wallet2 in C++.<p>
- * 
+ *
  * <p>Example:</p>
- * 
+ *
  * <code>
  * let wallet = await monerojs.createWalletFull({<br>
  * &nbsp;&nbsp; path: "./test_wallets/wallet1", // leave blank for in-memory wallet<br>
@@ -190,7 +196,7 @@ module.exports.connectToWalletRpc = function() { return module.exports.MoneroWal
  * &nbsp;&nbsp; server: new monerojs.MoneroRpcConnection("http://localhost:38081", "daemon_user", "daemon_password_123"),<br>
  * });
  * </code>
- * 
+ *
  * @param {object|MoneroWalletConfig} config - MoneroWalletConfig or equivalent config object
  * @param {string} config.path - path of the wallet to create (optional, in-memory wallet if not given)
  * @param {string} config.password - password of the wallet to create
@@ -213,13 +219,15 @@ module.exports.connectToWalletRpc = function() { return module.exports.MoneroWal
  * @param {fs} config.fs - Node.js compatible file system to use (defaults to disk or in-memory FS if browser)
  * @return {MoneroWalletFull} the created wallet
  */
-module.exports.createWalletFull = function() { return module.exports.MoneroWalletFull.createWallet(...arguments); }
+module.exports.createWalletFull = function () {
+  return module.exports.MoneroWalletFull.createWallet(...arguments);
+};
 
 /**
  * <p>Open an existing Monero wallet using fully client-side WebAssembly bindings to monero-project's wallet2 in C++.<p>
- * 
+ *
  * <p>Examples:<p>
- * 
+ *
  * <code>
  * let wallet1 = await monerojs.openWalletFull(<br>
  * &nbsp;&nbsp; "./wallets/wallet1",<br>
@@ -227,7 +235,7 @@ module.exports.createWalletFull = function() { return module.exports.MoneroWalle
  * &nbsp;&nbsp; MoneroNetworkType.STAGENET,<br>
  * &nbsp;&nbsp; "http://localhost:38081" // daemon uri<br>
  * );<br><br>
- * 
+ *
  * let wallet2 = await monerojs.openWalletFull({<br>
  * &nbsp;&nbsp; path: "./wallets/wallet2",<br>
  * &nbsp;&nbsp; password: "supersecretpassword",<br>
@@ -237,7 +245,7 @@ module.exports.createWalletFull = function() { return module.exports.MoneroWalle
  * &nbsp;&nbsp; serverPassword: "abctesting123"<br>
  * });
  * </code>
- * 
+ *
  * @param {MoneroWalletConfig|object|string} configOrPath - MoneroWalletConfig or equivalent config object or a path to a wallet to open
  * @param {string} configOrPath.path - path of the wallet to open (optional if 'keysData' provided)
  * @param {string} configOrPath.password - password of the wallet to open
@@ -258,13 +266,15 @@ module.exports.createWalletFull = function() { return module.exports.MoneroWalle
  * @param {fs} fs - Node.js compatible file system to use (defaults to disk or in-memory FS if browser)
  * @return {MoneroWalletFull} the opened wallet
  */
-module.exports.openWalletFull = function() { return module.exports.MoneroWalletFull.openWallet(...arguments); }
+module.exports.openWalletFull = function () {
+  return module.exports.MoneroWalletFull.openWallet(...arguments);
+};
 
 /**
  * <p>Create a wallet using WebAssembly bindings to monero-project.</p>
- * 
+ *
  * <p>Example:</p>
- * 
+ *
  * <code>
  * let wallet = await monerojs.createWalletKeys({<br>
  * &nbsp;&nbsp; password: "abc123",<br>
@@ -272,7 +282,7 @@ module.exports.openWalletFull = function() { return module.exports.MoneroWalletF
  * &nbsp;&nbsp; mnemonic: "coexist igloo pamphlet lagoon..."<br>
  * });
  * </code>
- * 
+ *
  * @param {MoneroWalletConfig|object} config - MoneroWalletConfig or equivalent config object
  * @param {string|number} config.networkType - network type of the wallet to create (one of "mainnet", "testnet", "stagenet" or MoneroNetworkType.MAINNET|TESTNET|STAGENET)
  * @param {string} config.mnemonic - mnemonic of the wallet to create (optional, random wallet created if neither mnemonic nor keys given)
@@ -283,4 +293,6 @@ module.exports.openWalletFull = function() { return module.exports.MoneroWalletF
  * @param {string} config.language - language of the wallet's mnemonic phrase (defaults to "English" or auto-detected)
  * @return {MoneroWalletKeys} the created wallet
  */
-module.exports.createWalletKeys = function() { return module.exports.MoneroWalletKeys.createWallet(...arguments); }
+module.exports.createWalletKeys = function () {
+  return module.exports.MoneroWalletKeys.createWallet(...arguments);
+};

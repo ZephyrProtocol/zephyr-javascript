@@ -50,15 +50,15 @@ struct wallet_wasm_listener : public monero_wallet_listener {
     m_on_new_block((long) height);
   }
 
-  void on_balances_changed(uint64_t new_balance, uint64_t new_unlocked_balance) override {
-    m_on_balances_changed(to_string(new_balance), to_string(new_unlocked_balance));
+  void on_balances_changed(uint64_t new_balance, uint64_t new_unlocked_balance, const std::string& asset_type) override {
+    m_on_balances_changed(to_string(new_balance), to_string(new_unlocked_balance), asset_type);
   }
 
   void on_output_received(const monero_output_wallet& output) override {
     boost::optional<uint64_t> height = output.m_tx->get_height();
     int version = output.m_tx->m_version == boost::none ? 2 : *output.m_tx->m_version; // TODO: version not present in unlocked output notification, defaulting to 2
     bool is_locked = std::static_pointer_cast<monero_tx_wallet>(output.m_tx)->m_is_locked.get();
-    m_on_output_received(height == boost::none ? (long) 0 : (long) *height, output.m_tx->m_hash.get(), to_string(*output.m_amount), (int) *output.m_account_index, (int) *output.m_subaddress_index, version, (int) *output.m_tx->m_unlock_height, is_locked);
+    m_on_output_received(height == boost::none ? (long) 0 : (long) *height, output.m_tx->m_hash.get(), to_string(*output.m_amount), output.m_asset_type, (int) *output.m_account_index, (int) *output.m_subaddress_index, version, (int) *output.m_tx->m_unlock_height, is_locked);
   }
 
   void on_output_spent(const monero_output_wallet& output) override {
@@ -67,7 +67,7 @@ struct wallet_wasm_listener : public monero_wallet_listener {
     string subaddress_idx_str = output.m_subaddress_index == boost::none ? "" : to_string(*output.m_subaddress_index).c_str();
     int version = output.m_tx->m_version == boost::none ? 2 : *output.m_tx->m_version; // TODO: version not present in unlocked output notification, defaulting to 2
     bool is_locked = std::static_pointer_cast<monero_tx_wallet>(output.m_tx)->m_is_locked.get();
-    m_on_output_spent(height == boost::none ? (long) 0 : (long) *height, output.m_tx->m_hash.get(), to_string(*output.m_amount), account_idx_str, subaddress_idx_str, version, (int) *output.m_tx->m_unlock_height, is_locked);
+    m_on_output_spent(height == boost::none ? (long) 0 : (long) *height, output.m_tx->m_hash.get(), to_string(*output.m_amount), output.m_asset_type, account_idx_str, subaddress_idx_str, version, (int) *output.m_tx->m_unlock_height, is_locked);
   }
 };
 
@@ -457,36 +457,84 @@ void monero_wasm_bridge::rescan_blockchain(int handle, emscripten::val callback)
   callback();
 }
 
+void monero_wasm_bridge::get_circulating_supply(int handle, emscripten::val callback) {
+  monero_wallet* wallet = (monero_wallet*) handle;
+  std::vector<std::pair<std::string, std::string>> circulating_supply = wallet->get_circulating_supply();
+  std::map<std::string, std::string> circulating_supply_map(circulating_supply.begin(), circulating_supply.end());
+
+  rapidjson::Document doc;
+  doc.SetObject();
+  doc.AddMember("circulating_supply", monero_utils::to_rapidjson_val(doc.GetAllocator(), circulating_supply_map), doc.GetAllocator());
+  callback(monero_utils::serialize(doc));
+}
+
+void monero_wasm_bridge::get_reserve_info(int handle, emscripten::val callback) {
+  monero_wallet* wallet = (monero_wallet*) handle;
+  std::map<std::string, std::string> reserve_info_map;
+
+  uint64_t zeph_reserve;
+  uint64_t num_stables;
+  uint64_t num_reserves;
+  uint64_t assets;
+  uint64_t assets_ma;
+  uint64_t liabilities;
+  uint64_t equity;
+  uint64_t equity_ma;
+  double reserve_ratio;
+  double reserve_ratio_ma;
+  wallet->get_reserve_info(zeph_reserve, num_stables, num_reserves, assets, assets_ma, liabilities, equity, equity_ma, reserve_ratio, reserve_ratio_ma);
+
+  uint64_t reserve_ratio_int = reserve_ratio * 1000000000000;
+  uint64_t reserve_ratio_ma_int = reserve_ratio_ma * 1000000000000;
+
+  reserve_info_map["zeph_reserve"] = std::to_string(zeph_reserve);
+  reserve_info_map["num_stables"] = std::to_string(num_stables);
+  reserve_info_map["num_reserves"] = std::to_string(num_reserves);
+  reserve_info_map["assets"] = std::to_string(assets);
+  reserve_info_map["assets_ma"] = std::to_string(assets_ma);
+  reserve_info_map["liabilities"] = std::to_string(liabilities);
+  reserve_info_map["equity"] = std::to_string(equity);
+  reserve_info_map["equity_ma"] = std::to_string(equity_ma);
+  reserve_info_map["reserve_ratio"] = std::to_string(reserve_ratio_int);
+  reserve_info_map["reserve_ratio_ma"] = std::to_string(reserve_ratio_ma_int);
+
+  rapidjson::Document doc;
+  doc.SetObject();
+  doc.AddMember("reserve_info", monero_utils::to_rapidjson_val(doc.GetAllocator(), reserve_info_map), doc.GetAllocator());
+  callback(monero_utils::serialize(doc));
+}
+
 string monero_wasm_bridge::get_balance_wallet(int handle) {
   monero_wallet* wallet = (monero_wallet*) handle;
 
   // serialize wallet balance to json string {"balance": ...}
   rapidjson::Document doc;
   doc.SetObject();
-  rapidjson::Value value;
-  doc.AddMember("balance", rapidjson::Value().SetUint64(wallet->get_balance()), doc.GetAllocator());
+  rapidjson::Value value;  
+  doc.AddMember("balance", monero_utils::to_rapidjson_val(doc.GetAllocator(), wallet->get_balance()), doc.GetAllocator());
+
   return monero_utils::serialize(doc);
 }
 
-string monero_wasm_bridge::get_balance_account(int handle, const uint32_t account_idx) {
+string monero_wasm_bridge::get_balance_account(int handle, const std::string& asset_type, const uint32_t account_idx) {
   monero_wallet* wallet = (monero_wallet*) handle;
 
   // serialize wallet balance to json string {"balance": ...}
   rapidjson::Document doc;
   doc.SetObject();
   rapidjson::Value value;
-  doc.AddMember("balance", rapidjson::Value().SetUint64(wallet->get_balance(account_idx)), doc.GetAllocator());
+  doc.AddMember("balance", rapidjson::Value().SetUint64(wallet->get_balance(asset_type, account_idx)), doc.GetAllocator());
   return monero_utils::serialize(doc);
 }
 
-string monero_wasm_bridge::get_balance_subaddress(int handle, const uint32_t account_idx, const uint32_t subaddress_idx) {
+string monero_wasm_bridge::get_balance_subaddress(int handle, const std::string& asset_type, const uint32_t account_idx, const uint32_t subaddress_idx) {
   monero_wallet* wallet = (monero_wallet*) handle;
 
   // serialize wallet balance to json string {"balance": ...}
   rapidjson::Document doc;
   doc.SetObject();
   rapidjson::Value value;
-  doc.AddMember("balance", rapidjson::Value().SetUint64(wallet->get_balance(account_idx, subaddress_idx)), doc.GetAllocator());
+  doc.AddMember("balance", rapidjson::Value().SetUint64(wallet->get_balance(asset_type, account_idx, subaddress_idx)), doc.GetAllocator());
   return monero_utils::serialize(doc);
 }
 
@@ -497,29 +545,30 @@ string monero_wasm_bridge::get_unlocked_balance_wallet(int handle) {
   rapidjson::Document doc;
   doc.SetObject();
   rapidjson::Value value;
-  doc.AddMember("unlockedBalance", rapidjson::Value().SetUint64(wallet->get_unlocked_balance()), doc.GetAllocator());
+  doc.AddMember("unlockedBalance", monero_utils::to_rapidjson_val(doc.GetAllocator(), wallet->get_unlocked_balance()), doc.GetAllocator());
+
   return monero_utils::serialize(doc);
 }
 
-string monero_wasm_bridge::get_unlocked_balance_account(int handle, const uint32_t account_idx) {
+string monero_wasm_bridge::get_unlocked_balance_account(int handle, const std::string& asset_type, const uint32_t account_idx) {
   monero_wallet* wallet = (monero_wallet*) handle;
 
   // serialize account unlocked balance to json string {"unlockedBalance": ...}
   rapidjson::Document doc;
   doc.SetObject();
   rapidjson::Value value;
-  doc.AddMember("unlockedBalance", rapidjson::Value().SetUint64(wallet->get_unlocked_balance(account_idx)), doc.GetAllocator());
+  doc.AddMember("unlockedBalance", rapidjson::Value().SetUint64(wallet->get_unlocked_balance(asset_type, account_idx)), doc.GetAllocator());
   return monero_utils::serialize(doc);
 }
 
-string monero_wasm_bridge::get_unlocked_balance_subaddress(int handle, const uint32_t account_idx, const uint32_t subaddress_idx) {
+string monero_wasm_bridge::get_unlocked_balance_subaddress(int handle, const std::string& asset_type, const uint32_t account_idx, const uint32_t subaddress_idx) {
   monero_wallet* wallet = (monero_wallet*) handle;
 
   // serialize subaddress unlocked balance to json string {"unlockedBalance": ...}
   rapidjson::Document doc;
   doc.SetObject();
   rapidjson::Value value;
-  doc.AddMember("unlockedBalance", rapidjson::Value().SetUint64(wallet->get_unlocked_balance(account_idx, subaddress_idx)), doc.GetAllocator());
+  doc.AddMember("unlockedBalance", rapidjson::Value().SetUint64(wallet->get_unlocked_balance(asset_type, account_idx, subaddress_idx)), doc.GetAllocator());
   return monero_utils::serialize(doc);
 }
 

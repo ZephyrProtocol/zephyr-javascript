@@ -3,8 +3,8 @@
 # initialize submodules recursively
 git submodule update --init --recursive
 
-# update monero-cpp
-cd ./external/monero-cpp
+# update zephyr-cpp
+cd ./external/zephyr-cpp
 git checkout master
 git pull --ff-only origin master
 

@@ -21,7 +21,7 @@ include_directories("src/cpp")
 # monero-cpp
 #####################
 
-set(MONERO_CPP "external/monero-cpp")
+set(MONERO_CPP "external/zephyr-cpp")
 set(MONERO_CPP_SRC "${MONERO_CPP}/src")
 
 # headers

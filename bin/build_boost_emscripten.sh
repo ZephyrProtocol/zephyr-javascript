@@ -5,7 +5,7 @@
 
 PLATFORM="emscripten"
 
-SRC_DIR="external/monero-cpp/external/boost-sdk"
+SRC_DIR="external/zephyr-cpp/external/boost-sdk"
 INSTALL_DIR="build/boost"
 
 SRC_PATH="$(pwd)/$SRC_DIR"

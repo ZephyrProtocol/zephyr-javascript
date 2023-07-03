@@ -5,7 +5,7 @@
 
 PLATFORM="emscripten"
 
-SRC_DIR="external/monero-cpp/external/openssl-sdk"
+SRC_DIR="external/zephyr-cpp/external/openssl-sdk"
 INSTALL_DIR="build/openssl"
 
 SRC_PATH="$(pwd)/$SRC_DIR"

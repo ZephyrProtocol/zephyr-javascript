@@ -472,29 +472,29 @@ void monero_wasm_bridge::get_reserve_info(int handle, emscripten::val callback) 
   monero_wallet* wallet = (monero_wallet*) handle;
   std::map<std::string, std::string> reserve_info_map;
 
-  uint64_t zeph_reserve;
-  uint64_t num_stables;
-  uint64_t num_reserves;
-  uint64_t assets;
-  uint64_t assets_ma;
-  uint64_t liabilities;
-  uint64_t equity;
-  uint64_t equity_ma;
-  double reserve_ratio;
-  double reserve_ratio_ma;
+  boost::multiprecision::uint128_t zeph_reserve = 0;
+  boost::multiprecision::uint128_t num_stables = 0;
+  boost::multiprecision::uint128_t num_reserves = 0;
+  boost::multiprecision::uint128_t assets = 0;
+  boost::multiprecision::uint128_t assets_ma = 0;
+  boost::multiprecision::uint128_t liabilities = 0;
+  boost::multiprecision::uint128_t equity = 0;
+  boost::multiprecision::uint128_t equity_ma = 0;
+  double reserve_ratio = 0;
+  double reserve_ratio_ma = 0;
   wallet->get_reserve_info(zeph_reserve, num_stables, num_reserves, assets, assets_ma, liabilities, equity, equity_ma, reserve_ratio, reserve_ratio_ma);
 
   uint64_t reserve_ratio_int = reserve_ratio * 1000000000000;
   uint64_t reserve_ratio_ma_int = reserve_ratio_ma * 1000000000000;
 
-  reserve_info_map["zeph_reserve"] = std::to_string(zeph_reserve);
-  reserve_info_map["num_stables"] = std::to_string(num_stables);
-  reserve_info_map["num_reserves"] = std::to_string(num_reserves);
-  reserve_info_map["assets"] = std::to_string(assets);
-  reserve_info_map["assets_ma"] = std::to_string(assets_ma);
-  reserve_info_map["liabilities"] = std::to_string(liabilities);
-  reserve_info_map["equity"] = std::to_string(equity);
-  reserve_info_map["equity_ma"] = std::to_string(equity_ma);
+  reserve_info_map["zeph_reserve"] = zeph_reserve.convert_to<std::string>();
+  reserve_info_map["num_stables"] = num_stables.convert_to<std::string>();
+  reserve_info_map["num_reserves"] = num_reserves.convert_to<std::string>();
+  reserve_info_map["assets"] = assets.convert_to<std::string>();
+  reserve_info_map["assets_ma"] = assets_ma.convert_to<std::string>();
+  reserve_info_map["liabilities"] = liabilities.convert_to<std::string>();
+  reserve_info_map["equity"] = equity.convert_to<std::string>();
+  reserve_info_map["equity_ma"] = equity_ma.convert_to<std::string>();
   reserve_info_map["reserve_ratio"] = std::to_string(reserve_ratio_int);
   reserve_info_map["reserve_ratio_ma"] = std::to_string(reserve_ratio_ma_int);
 

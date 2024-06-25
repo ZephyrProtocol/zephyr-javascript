@@ -482,7 +482,8 @@ void monero_wasm_bridge::get_reserve_info(int handle, emscripten::val callback) 
   boost::multiprecision::uint128_t equity_ma = 0;
   double reserve_ratio = 0;
   double reserve_ratio_ma = 0;
-  wallet->get_reserve_info(zeph_reserve, num_stables, num_reserves, assets, assets_ma, liabilities, equity, equity_ma, reserve_ratio, reserve_ratio_ma);
+  uint8_t hf_version = 0;
+  wallet->get_reserve_info(zeph_reserve, num_stables, num_reserves, assets, assets_ma, liabilities, equity, equity_ma, reserve_ratio, reserve_ratio_ma, hf_version);
 
   uint64_t reserve_ratio_int = reserve_ratio * 1000000000000;
   uint64_t reserve_ratio_ma_int = reserve_ratio_ma * 1000000000000;
@@ -497,6 +498,7 @@ void monero_wasm_bridge::get_reserve_info(int handle, emscripten::val callback) 
   reserve_info_map["equity_ma"] = equity_ma.convert_to<std::string>();
   reserve_info_map["reserve_ratio"] = std::to_string(reserve_ratio_int);
   reserve_info_map["reserve_ratio_ma"] = std::to_string(reserve_ratio_ma_int);
+  reserve_info_map["hf_version"] = std::to_string(hf_version);
 
   rapidjson::Document doc;
   doc.SetObject();
@@ -1344,13 +1346,13 @@ string monero_wasm_bridge::get_keys_file_buffer(int handle, string password, boo
 #endif
 }
 
-string monero_wasm_bridge::get_cache_file_buffer(int handle, string password) {
+string monero_wasm_bridge::get_cache_file_buffer(int handle) {
 #if defined BUILD_WALLET_FULL
   // get wallet
   monero_wallet_full* wallet = (monero_wallet_full*) handle;
 
   // get cache buffer
-  string cache_buf = wallet->get_cache_file_buffer(password);
+  string cache_buf = wallet->get_cache_file_buffer();
 
   // copy cache buffer to heap and keep pointer
   std::string* cache_buf_ptr = new std::string(cache_buf.c_str(), cache_buf.length());

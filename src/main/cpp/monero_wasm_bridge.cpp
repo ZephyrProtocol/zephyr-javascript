@@ -483,7 +483,10 @@ void monero_wasm_bridge::get_reserve_info(int handle, emscripten::val callback) 
   double reserve_ratio = 0;
   double reserve_ratio_ma = 0;
   uint8_t hf_version = 0;
-  wallet->get_reserve_info(zeph_reserve, num_stables, num_reserves, assets, assets_ma, liabilities, equity, equity_ma, reserve_ratio, reserve_ratio_ma, hf_version);
+  boost::multiprecision::uint128_t zyield_circ = 0;
+  boost::multiprecision::uint128_t zyield_rsv = 0;
+
+  wallet->get_reserve_info(zeph_reserve, num_stables, num_reserves, assets, assets_ma, liabilities, equity, equity_ma, reserve_ratio, reserve_ratio_ma, hf_version, zyield_circ, zyield_rsv);
 
   uint64_t reserve_ratio_int = reserve_ratio * 1000000000000;
   uint64_t reserve_ratio_ma_int = reserve_ratio_ma * 1000000000000;
@@ -499,6 +502,8 @@ void monero_wasm_bridge::get_reserve_info(int handle, emscripten::val callback) 
   reserve_info_map["reserve_ratio"] = std::to_string(reserve_ratio_int);
   reserve_info_map["reserve_ratio_ma"] = std::to_string(reserve_ratio_ma_int);
   reserve_info_map["hf_version"] = std::to_string(hf_version);
+  reserve_info_map["zyield_circ"] = zyield_circ.convert_to<std::string>();
+  reserve_info_map["zyield_rsv"] = zyield_rsv.convert_to<std::string>();
 
   rapidjson::Document doc;
   doc.SetObject();
